@@ -3,6 +3,7 @@ package httpbot
 import (
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -23,4 +24,16 @@ func NewDocumentFromResponse(res *http.Response) (*goquery.Document, error) {
 	}
 
 	return goquery.NewDocumentFromReader(reader)
+}
+
+func GetFormValues(form *goquery.Selection) url.Values {
+	vars := url.Values{}
+	form.Find("input").Each(func(i int, s *goquery.Selection) {
+		if s.AttrOr("type", "") != "checkbox" || s.AttrOr("checked", "") == "checked" {
+			if name, ok := s.Attr("name"); ok {
+				vars.Add(name, s.AttrOr("value", ""))
+			}
+		}
+	})
+	return vars
 }
